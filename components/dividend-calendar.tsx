@@ -154,7 +154,7 @@ export function DividendCalendar() {
                 <CalendarIcon className="h-6 w-6 text-muted-foreground" />
               </div>
               <p className="text-muted-foreground">
-                {selectedDate ? '해당 날짜에 배당 이벤트가 없습니다' : '캘린더에서 날짜를 선택하세요'}
+                {selectedDate ? '해당 날짜에 배당 이벤트가 없습니다111' : '캘린더에서 날짜를 선택하세요'}
               </p>
             </div>
           ) : (
