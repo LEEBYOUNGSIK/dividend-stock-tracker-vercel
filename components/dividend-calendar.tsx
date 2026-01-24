@@ -162,7 +162,7 @@ export function DividendCalendar() {
               {selectedDateEvents.map((event, idx) => (
                 <div key={`${event.date}-${event.type}-${idx}`} className="space-y-3">
                   <Badge variant={event.type === 'ex-dividend' ? 'destructive' : 'default'} className={event.type === 'payment' ? 'bg-success text-success-foreground' : ''}>
-                    {event.type === 'ex-dividend' ? '배당락일' : '배당 지급일'}
+                    {event.type === 'ex-dividend' ? '배당락일' : '배당 지급일1'}
                   </Badge>
                   {event.stocks.map((stock) => (
                     <div
