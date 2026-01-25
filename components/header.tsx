@@ -41,7 +41,7 @@ export function Header() {
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary">
               <TrendingUp className="h-5 w-5 text-primary-foreground" />
             </div>
-            <span className="text-lg font-bold text-foreground">배당플러스</span>
+            <span className="text-lg font-bold text-foreground">배당 TRACKER</span>
           </Link>
           
           {user && (

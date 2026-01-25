@@ -119,7 +119,7 @@ export default function LandingPage() {
       <section className="px-4 py-20 md:py-32">
         <div className="mx-auto max-w-4xl text-center">
           <h1 className="text-balance text-4xl font-bold tracking-tight text-foreground md:text-6xl">
-            배당 TRACKER111
+            배당 TRACKER
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-pretty text-lg text-muted-foreground md:text-xl">
             배당락일, 지급일, 예상 수익까지 — 미국 배당주 투자자를 위한 올인원 트래커
@@ -175,7 +175,7 @@ export default function LandingPage() {
                 배당 투자를 위한 완벽한 도구
               </h2>
               <p className="mt-4 text-muted-foreground">
-                배당플러스는 배당 투자자를 위해 설계된 올인원 플랫폼입니다. 
+                배당 TRACKER는 배당 투자자를 위해 설계된 올인원 플랫폼입니다. 
                 복잡한 정보를 깔끔하게 정리하여 투자 결정을 도와드립니다.
               </p>
 
