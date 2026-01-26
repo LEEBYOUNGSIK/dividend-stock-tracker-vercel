@@ -11,8 +11,14 @@ interface StockDetailCardProps {
 }
 
 export function StockDetailCard({ stock }: StockDetailCardProps) {
-  const priceChange = ((stock.currentPrice - stock.fiftyTwoWeekLow) / stock.fiftyTwoWeekLow) * 100
-  const fromHigh = ((stock.fiftyTwoWeekHigh - stock.currentPrice) / stock.fiftyTwoWeekHigh) * 100
+  const hasLow = stock.fiftyTwoWeekLow > 0
+  const hasHigh = stock.fiftyTwoWeekHigh > 0
+  const priceChange = hasLow
+    ? ((stock.currentPrice - stock.fiftyTwoWeekLow) / stock.fiftyTwoWeekLow) * 100
+    : 0
+  const fromHigh = hasHigh
+    ? ((stock.fiftyTwoWeekHigh - stock.currentPrice) / stock.fiftyTwoWeekHigh) * 100
+    : 0
 
   return (
     <div className="space-y-6">
@@ -37,14 +43,20 @@ export function StockDetailCard({ stock }: StockDetailCardProps) {
             <div className="text-left md:text-right">
               <p className="text-3xl font-bold text-foreground">${stock.currentPrice.toFixed(2)}</p>
               <div className="mt-1 flex items-center gap-2 md:justify-end">
-                {priceChange >= 0 ? (
-                  <TrendingUp className="h-4 w-4 text-success" />
+                {hasLow ? (
+                  <>
+                    {priceChange >= 0 ? (
+                      <TrendingUp className="h-4 w-4 text-success" />
+                    ) : (
+                      <TrendingDown className="h-4 w-4 text-destructive" />
+                    )}
+                    <span className={priceChange >= 0 ? 'text-success' : 'text-destructive'}>
+                      {priceChange >= 0 ? '+' : ''}{priceChange.toFixed(2)}% (52주 최저가 대비)
+                    </span>
+                  </>
                 ) : (
-                  <TrendingDown className="h-4 w-4 text-destructive" />
+                  <span className="text-sm text-muted-foreground">52주 정보 없음</span>
                 )}
-                <span className={priceChange >= 0 ? 'text-success' : 'text-destructive'}>
-                  {priceChange >= 0 ? '+' : ''}{priceChange.toFixed(2)}% (52주 최저가 대비)
-                </span>
               </div>
             </div>
           </div>
@@ -52,13 +64,21 @@ export function StockDetailCard({ stock }: StockDetailCardProps) {
           <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4">
             <div className="rounded-xl bg-secondary/50 p-4">
               <p className="text-sm text-muted-foreground">52주 최고가</p>
-              <p className="mt-1 text-lg font-semibold text-foreground">${stock.fiftyTwoWeekHigh.toFixed(2)}</p>
-              <p className="text-xs text-destructive">-{fromHigh.toFixed(1)}%</p>
+              <p className="mt-1 text-lg font-semibold text-foreground">
+                {hasHigh ? `$${stock.fiftyTwoWeekHigh.toFixed(2)}` : '-'}
+              </p>
+              <p className="text-xs text-destructive">
+                {hasHigh ? `-${fromHigh.toFixed(1)}%` : '-'}
+              </p>
             </div>
             <div className="rounded-xl bg-secondary/50 p-4">
               <p className="text-sm text-muted-foreground">52주 최저가</p>
-              <p className="mt-1 text-lg font-semibold text-foreground">${stock.fiftyTwoWeekLow.toFixed(2)}</p>
-              <p className="text-xs text-success">+{priceChange.toFixed(1)}%</p>
+              <p className="mt-1 text-lg font-semibold text-foreground">
+                {hasLow ? `$${stock.fiftyTwoWeekLow.toFixed(2)}` : '-'}
+              </p>
+              <p className="text-xs text-success">
+                {hasLow ? `+${priceChange.toFixed(1)}%` : '-'}
+              </p>
             </div>
             <div className="rounded-xl bg-secondary/50 p-4">
               <p className="text-sm text-muted-foreground">시가총액</p>

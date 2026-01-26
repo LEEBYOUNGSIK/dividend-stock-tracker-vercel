@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/lib/auth-context'
@@ -16,7 +16,13 @@ import {
   Eye,
   EyeClosed,
 } from 'lucide-react'
-import { useState } from 'react'
+type YahooTicker = {
+  symbol: string
+  name: string
+  price: number | null
+  changePercent: number | null
+  currency: string
+}
 
 const features = [
   {
@@ -54,6 +60,9 @@ export default function LandingPage() {
   const router = useRouter()
   const { user, isLoading } = useAuth()
   const [isDark, setIsDark] = useState(false)
+  const [tickers, setTickers] = useState<YahooTicker[]>([])
+  const [isTickerLoading, setIsTickerLoading] = useState(true)
+  const [tickerError, setTickerError] = useState<string | null>(null)
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme')
@@ -68,6 +77,62 @@ export default function LandingPage() {
       router.push('/dashboard')
     }
   }, [user, isLoading, router])
+
+  useEffect(() => {
+    let isMounted = true
+
+    const loadTickers = async () => {
+      try {
+        setIsTickerLoading(true)
+        setTickerError(null)
+
+        const response = await fetch('/api/yahoo/tickers')
+        if (!response.ok) {
+          throw new Error('Yahoo Finance 응답 오류')
+        }
+
+        const data = await response.json()
+        if (isMounted) {
+          setTickers(data?.tickers ?? [])
+        }
+      } catch (error) {
+        if (isMounted) {
+          setTickerError('티커 정보를 불러오지 못했습니다.')
+        }
+      } finally {
+        if (isMounted) {
+          setIsTickerLoading(false)
+        }
+      }
+    }
+
+    loadTickers()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  const formatPrice = (value: number | null, currency: string) => {
+    if (typeof value !== 'number') {
+      return '-'
+    }
+
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency,
+      maximumFractionDigits: 2,
+    }).format(value)
+  }
+
+  const formatChangePercent = (value: number | null) => {
+    if (typeof value !== 'number') {
+      return '-'
+    }
+
+    const sign = value >= 0 ? '+' : ''
+    return `${sign}${value.toFixed(2)}%`
+  }
 
   const toggleTheme = () => {
     const newIsDark = !isDark
@@ -245,6 +310,63 @@ export default function LandingPage() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Yahoo Finance Ticker Section */}
+      <section className="bg-secondary/30 px-4 py-20">
+        <div className="mx-auto max-w-7xl">
+          <div className="text-center">
+            <h2 className="text-3xl font-bold text-foreground">
+              Yahoo Finance 미국 주식 티커
+            </h2>
+            <p className="mt-4 text-muted-foreground">
+              Yahoo Finance에서 가장 활발한 미국 주식 티커를 불러옵니다.
+            </p>
+          </div>
+
+          <div className="mt-10">
+            {isTickerLoading && (
+              <div className="flex items-center justify-center text-muted-foreground">
+                티커 정보를 불러오는 중...
+              </div>
+            )}
+
+            {!isTickerLoading && tickerError && (
+              <div className="flex items-center justify-center text-destructive">
+                {tickerError}
+              </div>
+            )}
+
+            {!isTickerLoading && !tickerError && (
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {tickers.map((ticker) => (
+                  <Card key={ticker.symbol} className="border-border bg-card">
+                    <CardContent className="p-5">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="text-sm text-muted-foreground">{ticker.symbol}</p>
+                          <p className="text-lg font-semibold text-foreground">{ticker.name}</p>
+                        </div>
+                        <span
+                          className={
+                            ticker.changePercent !== null && ticker.changePercent >= 0
+                              ? 'text-success'
+                              : 'text-destructive'
+                          }
+                        >
+                          {formatChangePercent(ticker.changePercent)}
+                        </span>
+                      </div>
+                      <p className="mt-4 text-xl font-bold text-foreground">
+                        {formatPrice(ticker.price, ticker.currency)}
+                      </p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </section>

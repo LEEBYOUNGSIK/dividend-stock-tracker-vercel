@@ -32,6 +32,8 @@ export interface DividendHistory {
   payDate: string
   changePercent: number
   isCut: boolean
+  isSpecial?: boolean
+  remark?: string
 }
 
 export interface CalendarEvent {

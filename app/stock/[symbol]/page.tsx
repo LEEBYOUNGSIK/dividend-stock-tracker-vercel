@@ -10,7 +10,7 @@ import { DividendHistoryChart } from '@/components/dividend-history-chart'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ArrowLeft, Plus } from 'lucide-react'
-import { mockStocks, mockDividendHistory } from '@/lib/mock-data'
+import type { DividendStock, DividendHistory } from '@/lib/types'
 import {
   Dialog,
   DialogContent,
@@ -27,11 +27,13 @@ export default function StockDetailPage({ params }: { params: Promise<{ symbol: 
   const router = useRouter()
   const { user, isLoading, addToPortfolio, portfolio } = useAuth()
   const [shares, setShares] = useState('')
-  const [averageCost, setAverageCost] = useState('')
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [stock, setStock] = useState<DividendStock | null>(null)
+  const [history, setHistory] = useState<DividendHistory[]>([])
+  const [isStockLoading, setIsStockLoading] = useState(true)
+  const [stockError, setStockError] = useState<string | null>(null)
 
-  const stock = mockStocks.find((s) => s.symbol === resolvedParams.symbol)
-  const history = mockDividendHistory[resolvedParams.symbol] || []
+  const symbol = resolvedParams.symbol.toUpperCase()
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -40,23 +42,60 @@ export default function StockDetailPage({ params }: { params: Promise<{ symbol: 
   }, [user, isLoading, router])
 
   useEffect(() => {
-    if (stock) {
-      setAverageCost(stock.currentPrice.toString())
-    }
-  }, [stock])
+    let isMounted = true
 
-  const handleAddStock = () => {
-    if (stock && shares && averageCost) {
-      addToPortfolio(stock.symbol, Number(shares), Number(averageCost))
+    const loadStock = async () => {
+      try {
+        setIsStockLoading(true)
+        setStockError(null)
+
+        const response = await fetch(`/api/yahoo/stock?symbol=${encodeURIComponent(symbol)}`)
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => null)
+          const message =
+            errorData?.error ||
+            `종목 정보를 불러오지 못했습니다. (상태: ${response.status})`
+          throw new Error(message)
+        }
+
+        const data = await response.json()
+        if (isMounted) {
+          setStock(data?.stock ?? null)
+          setHistory(data?.history ?? [])
+        }
+      } catch (error) {
+        if (isMounted) {
+          setStockError(
+            error instanceof Error ? error.message : '종목 정보를 불러오지 못했습니다.',
+          )
+        }
+      } finally {
+        if (isMounted) {
+          setIsStockLoading(false)
+        }
+      }
+    }
+
+    if (symbol) {
+      loadStock()
+    }
+
+    return () => {
+      isMounted = false
+    }
+  }, [symbol])
+
+  const handleAddStock = async () => {
+    if (stock && shares) {
+      await addToPortfolio(stock, Number(shares), stock.currentPrice)
       setIsDialogOpen(false)
       setShares('')
-      setAverageCost(stock.currentPrice.toString())
     }
   }
 
   const isInPortfolio = stock ? portfolio.some((p) => p.symbol === stock.symbol) : false
 
-  if (isLoading) {
+  if (isLoading || isStockLoading) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
@@ -79,6 +118,21 @@ export default function StockDetailPage({ params }: { params: Promise<{ symbol: 
     return null
   }
 
+  if (stockError) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="mx-auto flex max-w-7xl flex-col items-center justify-center px-4 py-32">
+          <h1 className="text-2xl font-bold text-foreground">종목 정보를 불러오지 못했습니다</h1>
+          <p className="mt-2 text-muted-foreground">{stockError}</p>
+          <Link href="/dashboard">
+            <Button className="mt-6">대시보드로 돌아가기</Button>
+          </Link>
+        </main>
+      </div>
+    )
+  }
+
   if (!stock) {
     return (
       <div className="min-h-screen bg-background">
@@ -93,7 +147,6 @@ export default function StockDetailPage({ params }: { params: Promise<{ symbol: 
       </div>
     )
   }
-
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -141,27 +194,17 @@ export default function StockDetailPage({ params }: { params: Promise<{ symbol: 
                     onChange={(e) => setShares(e.target.value)}
                     className="bg-secondary/50 text-foreground"
                   />
+                  <p className="text-xs text-muted-foreground">
+                    평균 매입가는 현재가 기준으로 자동 적용됩니다.
+                  </p>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="modal-avgCost" className="text-foreground">평균 매입가 ($)</Label>
-                  <Input
-                    id="modal-avgCost"
-                    type="number"
-                    step="0.01"
-                    placeholder="예: 150.00"
-                    value={averageCost}
-                    onChange={(e) => setAverageCost(e.target.value)}
-                    className="bg-secondary/50 text-foreground"
-                  />
-                </div>
-
-                {shares && averageCost && (
+                {shares && (
                   <div className="rounded-lg bg-secondary/50 p-4">
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">총 투자금액</span>
                       <span className="font-semibold text-foreground">
-                        ${(Number(shares) * Number(averageCost)).toFixed(2)}
+                        ${(Number(shares) * stock.currentPrice).toFixed(2)}
                       </span>
                     </div>
                     <div className="mt-2 flex justify-between text-sm">
@@ -176,7 +219,7 @@ export default function StockDetailPage({ params }: { params: Promise<{ symbol: 
                 <Button
                   className="w-full"
                   onClick={handleAddStock}
-                  disabled={!shares || !averageCost}
+                  disabled={!shares}
                 >
                   포트폴리오에 추가
                 </Button>
@@ -192,7 +235,11 @@ export default function StockDetailPage({ params }: { params: Promise<{ symbol: 
           {/* Dividend History */}
           <section>
             <h2 className="mb-4 text-xl font-bold text-foreground">배당 히스토리</h2>
-            <DividendHistoryChart symbol={stock.symbol} history={history} />
+            <DividendHistoryChart
+              symbol={stock.symbol}
+              history={history}
+              currentPrice={stock.currentPrice}
+            />
           </section>
         </div>
       </main>

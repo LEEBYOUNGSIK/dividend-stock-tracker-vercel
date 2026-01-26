@@ -18,7 +18,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { MoreHorizontal, Trash2, ExternalLink, TrendingUp, TrendingDown } from 'lucide-react'
+import { MoreHorizontal, Trash2, ExternalLink, TrendingUp } from 'lucide-react'
 
 export function PortfolioTable() {
   const { portfolio, removeFromPortfolio } = useAuth()
@@ -44,7 +44,6 @@ export function PortfolioTable() {
             <TableHead className="text-right text-muted-foreground">보유수량</TableHead>
             <TableHead className="text-right text-muted-foreground">현재가</TableHead>
             <TableHead className="text-right text-muted-foreground">평가금액</TableHead>
-            <TableHead className="text-right text-muted-foreground">수익률</TableHead>
             <TableHead className="text-right text-muted-foreground">배당수익률</TableHead>
             <TableHead className="text-right text-muted-foreground">연간배당금</TableHead>
             <TableHead className="w-10"></TableHead>
@@ -52,10 +51,6 @@ export function PortfolioTable() {
         </TableHeader>
         <TableBody>
           {portfolio.map((stock) => {
-            const totalCost = stock.shares * stock.averageCost
-            const returnValue = stock.totalValue - totalCost
-            const returnPercent = (returnValue / totalCost) * 100
-
             return (
               <TableRow key={stock.id} className="border-border hover:bg-secondary/30">
                 <TableCell>
@@ -84,16 +79,6 @@ export function PortfolioTable() {
                 </TableCell>
                 <TableCell className="text-right font-medium text-foreground">
                   ${stock.totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </TableCell>
-                <TableCell className="text-right">
-                  <div className={`flex items-center justify-end gap-1 font-medium ${returnPercent >= 0 ? 'text-success' : 'text-destructive'}`}>
-                    {returnPercent >= 0 ? (
-                      <TrendingUp className="h-4 w-4" />
-                    ) : (
-                      <TrendingDown className="h-4 w-4" />
-                    )}
-                    {returnPercent >= 0 ? '+' : ''}{returnPercent.toFixed(2)}%
-                  </div>
                 </TableCell>
                 <TableCell className="text-right">
                   <span className={`font-medium ${stock.dividendYield >= 3 ? 'text-success' : 'text-foreground'}`}>
