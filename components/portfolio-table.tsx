@@ -36,10 +36,10 @@ export function PortfolioTable() {
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-card">
-      <Table>
-        <TableHeader>
-          <TableRow className="border-border hover:bg-transparent">
+    <div className="overflow-hidden rounded-2xl border border-border/60 bg-card">
+      <Table className="w-full">
+        <TableHeader className="bg-muted/20">
+          <TableRow className="border-b border-border/60 hover:bg-transparent">
             <TableHead className="text-muted-foreground">종목</TableHead>
             <TableHead className="text-right text-muted-foreground">보유수량</TableHead>
             <TableHead className="text-right text-muted-foreground">현재가</TableHead>
@@ -52,8 +52,11 @@ export function PortfolioTable() {
         <TableBody>
           {portfolio.map((stock) => {
             return (
-              <TableRow key={stock.id} className="border-border hover:bg-secondary/30">
-                <TableCell>
+              <TableRow
+                key={stock.id}
+                className="border-b border-border/60 bg-card hover:bg-muted/30 even:bg-muted/20"
+              >
+                <TableCell className="py-4">
                   <Link href={`/stock/${stock.symbol}`} className="flex items-center gap-3 hover:opacity-80">
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary">
                       <span className="text-xs font-bold text-secondary-foreground">
@@ -71,24 +74,24 @@ export function PortfolioTable() {
                     </div>
                   </Link>
                 </TableCell>
-                <TableCell className="text-right font-medium text-foreground">
+                <TableCell className="py-4 text-right font-medium text-foreground">
                   {stock.shares.toLocaleString()}주
                 </TableCell>
-                <TableCell className="text-right font-medium text-foreground">
+                <TableCell className="py-4 text-right font-medium text-foreground">
                   ${stock.currentPrice.toFixed(2)}
                 </TableCell>
-                <TableCell className="text-right font-medium text-foreground">
+                <TableCell className="py-4 text-right font-medium text-foreground">
                   ${stock.totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="py-4 text-right">
                   <span className={`font-medium ${stock.dividendYield >= 3 ? 'text-success' : 'text-foreground'}`}>
                     {stock.dividendYield.toFixed(2)}%
                   </span>
                 </TableCell>
-                <TableCell className="text-right font-medium text-success">
+                <TableCell className="py-4 text-right font-medium text-success">
                   ${stock.totalDividend.toFixed(2)}
                 </TableCell>
-                <TableCell>
+                <TableCell className="py-4">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon" className="h-8 w-8">
