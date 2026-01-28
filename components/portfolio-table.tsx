@@ -56,7 +56,7 @@ export function PortfolioTable() {
                 key={stock.id}
                 className="border-b border-border/60 bg-card hover:bg-muted/30 even:bg-muted/20"
               >
-                <TableCell className="py-4">
+                <TableCell className="py-2">
                   <Link href={`/stock/${stock.symbol}`} className="flex items-center gap-3 hover:opacity-80">
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary">
                       <span className="text-xs font-bold text-secondary-foreground">
@@ -74,24 +74,24 @@ export function PortfolioTable() {
                     </div>
                   </Link>
                 </TableCell>
-                <TableCell className="py-4 text-right font-medium text-foreground">
+                <TableCell className="py-2 text-right font-medium text-foreground">
                   {stock.shares.toLocaleString()}주
                 </TableCell>
-                <TableCell className="py-4 text-right font-medium text-foreground">
+                <TableCell className="py-2 text-right font-medium text-foreground">
                   ${stock.currentPrice.toFixed(2)}
                 </TableCell>
-                <TableCell className="py-4 text-right font-medium text-foreground">
+                <TableCell className="py-2 text-right font-medium text-foreground">
                   ${stock.totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </TableCell>
-                <TableCell className="py-4 text-right">
+                <TableCell className="py-2 text-right">
                   <span className={`font-medium ${stock.dividendYield >= 3 ? 'text-success' : 'text-foreground'}`}>
                     {stock.dividendYield.toFixed(2)}%
                   </span>
                 </TableCell>
-                <TableCell className="py-4 text-right font-medium text-success">
+                <TableCell className="py-2 text-right font-medium text-success">
                   ${stock.totalDividend.toFixed(2)}
                 </TableCell>
-                <TableCell className="py-4">
+                <TableCell className="py-2">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon" className="h-8 w-8">
