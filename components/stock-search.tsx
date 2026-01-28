@@ -41,7 +41,7 @@ export function StockSearch({ onSelect }: StockSearchProps) {
     }
 
     const controller = new AbortController()
-    const timeoutId = setTimeout(async () => {
+    const runSearch = async () => {
       try {
         setIsSearching(true)
         setSearchError(null)
@@ -64,6 +64,9 @@ export function StockSearch({ onSelect }: StockSearchProps) {
         const data = await response.json()
         setSearchResults(data?.results ?? [])
       } catch (error) {
+        if (error instanceof DOMException && error.name === 'AbortError') {
+          return
+        }
         if (!controller.signal.aborted) {
           const message =
             error instanceof Error ? error.message : '배당 정보를 불러오지 못했습니다.'
@@ -74,6 +77,10 @@ export function StockSearch({ onSelect }: StockSearchProps) {
           setIsSearching(false)
         }
       }
+    }
+
+    const timeoutId = setTimeout(() => {
+      void runSearch()
     }, 350)
 
     return () => {
